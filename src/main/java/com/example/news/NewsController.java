@@ -12,7 +12,7 @@ import java.util.List;
 @RequestMapping("/api/news")
 @CrossOrigin(origins = {
     "http://localhost:5173",
-    "https://news-frontend-ckmo.onrender.com"
+    "https://articles-f7vq.onrender.com"
 })
 public class NewsController {
 
