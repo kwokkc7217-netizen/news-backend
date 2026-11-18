@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
  * each test starts and one line with its result, so a run shows exactly
  * what was tested and how it ended.
  */
-@ExtendWith({MockitoExtension.class, TestLogger.class})
+@ExtendWith({MockitoExtension.class, ArticleSubmissionServiceTest.TestLogger.class})
 class ArticleSubmissionServiceTest {
 
     @Mock
