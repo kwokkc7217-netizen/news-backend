@@ -1,6 +1,7 @@
 
 package com.example.news;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,6 +17,7 @@ public class ArticleSubmissionService {
         this.categoryRepository = categoryRepository;
     }
 
+    @CacheEvict(value = "newsList", allEntries = true)
     public News submitArticle(ArticleSubmissionRequest request) {
 
         // 1. Basic validation

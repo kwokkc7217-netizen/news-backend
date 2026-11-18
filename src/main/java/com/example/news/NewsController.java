@@ -1,6 +1,7 @@
 
 package com.example.news;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ public class NewsController {
     }
 
     @GetMapping
+    @Cacheable("newsList")
     public List<News> getAllNews() {
         return newsRepository.findAll();
     }
