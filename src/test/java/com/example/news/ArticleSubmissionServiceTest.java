@@ -1,7 +1,12 @@
 package com.example.news;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestWatcher;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,8 +28,12 @@ import static org.mockito.Mockito.when;
  *
  * The two repositories are Mockito mocks, so each test proves what the
  * service itself does: validation, category lookup, and saving.
+ *
+ * A @BeforeEach hook plus a small TestWatcher print one console line when
+ * each test starts and one line with its result, so a run shows exactly
+ * what was tested and how it ended.
  */
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, TestLogger.class})
 class ArticleSubmissionServiceTest {
 
     @Mock
@@ -36,7 +45,13 @@ class ArticleSubmissionServiceTest {
     @InjectMocks
     private ArticleSubmissionService service;
 
+    @BeforeEach
+    void logTestStart(TestInfo testInfo) {
+        System.out.println("[RUNNING] " + testInfo.getDisplayName());
+    }
+
     @Test
+    @DisplayName("Valid article is saved and returned")
     void submitValidArticle_savesAndReturnsNews() {
         Category category = new Category();
         category.setId(1L);
@@ -66,6 +81,7 @@ class ArticleSubmissionServiceTest {
     }
 
     @Test
+    @DisplayName("Blank title is rejected and nothing is saved")
     void submitBlankTitle_throwsAndNeverSaves() {
         ArticleSubmissionRequest request = validRequest();
         request.setTitle("   ");
@@ -81,6 +97,7 @@ class ArticleSubmissionServiceTest {
     }
 
     @Test
+    @DisplayName("Blank URL is rejected and nothing is saved")
     void submitBlankUrl_throwsAndNeverSaves() {
         ArticleSubmissionRequest request = validRequest();
         request.setUrl("");
@@ -95,6 +112,7 @@ class ArticleSubmissionServiceTest {
     }
 
     @Test
+    @DisplayName("Blank category code is rejected and nothing is saved")
     void submitBlankCategoryCode_throwsAndNeverSaves() {
         ArticleSubmissionRequest request = validRequest();
         request.setCategoryCode(null);
@@ -109,6 +127,7 @@ class ArticleSubmissionServiceTest {
     }
 
     @Test
+    @DisplayName("Unknown category code is rejected and nothing is saved")
     void submitUnknownCategoryCode_throwsAndNeverSaves() {
         when(categoryRepository.findByCode("NOPE"))
                 .thenReturn(Optional.empty());
@@ -122,6 +141,34 @@ class ArticleSubmissionServiceTest {
 
         assertEquals("Invalid category code", error.getMessage());
         verify(newsRepository, never()).save(any(News.class));
+    }
+
+    /**
+     * Prints one line per test result. JUnit calls these hooks after each
+     * test, so the console shows PASS / FAIL next to the test name.
+     */
+    public static class TestLogger implements TestWatcher {
+
+        @Override
+        public void testSuccessful(ExtensionContext context) {
+            System.out.println("[PASS] " + context.getDisplayName());
+        }
+
+        @Override
+        public void testFailed(ExtensionContext context, Throwable cause) {
+            System.out.println("[FAIL] " + context.getDisplayName()
+                    + " — " + cause.getMessage());
+        }
+
+        @Override
+        public void testAborted(ExtensionContext context, Throwable cause) {
+            System.out.println("[ABORTED] " + context.getDisplayName());
+        }
+
+        @Override
+        public void testDisabled(ExtensionContext context, Optional<String> reason) {
+            System.out.println("[SKIPPED] " + context.getDisplayName());
+        }
     }
 
     private ArticleSubmissionRequest validRequest() {
